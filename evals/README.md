@@ -47,18 +47,17 @@ score their temporary response maps with the same command.
 
 ## Recorded aggregate results
 
-- `results/louie_api_v1_forward_v1_metrics.json`: 10/20 (50%) on the initial
-  isolated skill-enabled pass.
-- `results/louie_api_v1_forward_v4_metrics.json`: 20/20 (100%) after refining
-  skills from substantive misses, broadening only semantically equivalent
-  evaluator phrasing, making hidden prompt expectations explicit, and rerunning
-  failed cases in a fresh isolated context.
-- `results/louie_api_v2_forward_metrics.json`: 22/23 (95.7%) over the current
-  suite, after it was rewritten against live-validated behavior. The single
-  failure is `notebook_dataframe_followup`, which exceeds its line budget
-  (16 > 14) with otherwise correct content. It is left failing on purpose:
-  raising the cap to accommodate the answer would be fitting the benchmark to
-  the model rather than measuring it.
+`results/louie_api_v1_forward_metrics.json` holds the latest isolated
+skill-enabled pass over this suite: **22/23 (95.7%)**.
+
+The single failure is `notebook_dataframe_followup`, which exceeds its line
+budget (16 > 14) with otherwise correct content. It is left failing on purpose:
+raising the cap to accommodate the answer would fit the benchmark to the model
+rather than measure it.
+
+Only the current suite's metrics are kept. Results from earlier revisions of the
+suite are not comparable — the case set changed — so they are not retained, to
+avoid implying a like-for-like trend.
 
 These files contain counts and failed case IDs only. They contain no prompts,
 answers, traces, credentials, or live-service data.
