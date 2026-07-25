@@ -1,15 +1,14 @@
 ---
 name: louie
-description: Route requests to the Louie skills available in this repository.
+description: "Route Louie-specific requests to the focused Python SDK or REST API workflow while preserving least-privilege data handling. Use for any Louie.ai integration, investigation, or API request."
 ---
 
-# Louie
+# Louie Router
 
-Use this skill as the entry point for Louie-specific workflows. Add concrete guidance here only after it has been reviewed for accuracy, least-privilege access, and safe handling of user data.
+- Use `louie-py` for Python, notebooks, `louieai`, `louie()`, cursors, uploads, response handling, SDK authentication, or Table AI overrides.
+- Use `louie-rest-api` for curl/httpx/fetch, `/api/*`, OpenAPI, JSONL streaming, FastAPI routes, or server implementation.
+- For mixed requests, use the SDK skill for the client journey and REST skill to verify the deployed endpoint contract.
+- Reasoning, final-answer selection, run phases, terminal status, and raw stream messages are supported in recent `louieai`; confirm the installed version exposes a property before relying on it, and never invent one.
+- The server declares the final answer. Do not present text position as the contract in either interface.
 
-## Safety baseline
-
-- Never request, print, commit, or transmit secrets.
-- Prefer read-only inspection until a user explicitly authorizes a change.
-- Treat customer, production, and personal data as sensitive; minimize collection and redact examples.
-- State external side effects before performing them.
+Never expose credentials, tokens, customer data, or private prompts. Prefer read-only inspection until the user authorizes an external side effect.

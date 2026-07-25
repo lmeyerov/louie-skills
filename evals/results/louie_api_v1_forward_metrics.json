@@ -1,0 +1,10 @@
+{
+  "failed": 1,
+  "failed_case_ids": [
+    "notebook_dataframe_followup"
+  ],
+  "journey_id": "louie_api_v1",
+  "pass_rate": 0.9565217391304348,
+  "passed": 22,
+  "total": 23
+}

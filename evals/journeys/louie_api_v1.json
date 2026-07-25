@@ -1,0 +1,527 @@
+{
+  "id": "louie_api_v1",
+  "description": "Sanitized persona and pressure-test journeys for Louie SDK/REST guidance, validated against an authorized dev deployment, with remaining product gaps labeled.",
+  "coverage": {
+    "personas": [
+      "notebook-data-analyst",
+      "security-investigator",
+      "application-developer",
+      "platform-operator"
+    ],
+    "dimensions": [
+      "discovery",
+      "text-query",
+      "dataframe",
+      "multi-turn",
+      "implicit-cursor",
+      "reasoning-final",
+      "phases-progress",
+      "mixed-partial-stream",
+      "error-recovery",
+      "sdk-rest-handoff",
+      "contract-discovery",
+      "authentication",
+      "privacy-org",
+      "backward-compatibility",
+      "live-test-safety"
+    ]
+  },
+  "cases": [
+    {
+      "id": "notebook_onboarding_text",
+      "persona": "notebook-data-analyst",
+      "task": "start a private text investigation and read the result",
+      "support": "current",
+      "dimensions": [
+        "discovery",
+        "text-query",
+        "implicit-cursor",
+        "privacy-org"
+      ],
+      "prompt": "Show the smallest supported notebook example that asks Louie a private question and reads its text.",
+      "checks": {
+        "regex": [
+          "from louieai import louie",
+          "louie\\(share_mode\\s*=\\s*[\"']Private[\"']\\)",
+          "lui\\(",
+          "lui\\.text"
+        ],
+        "must_not_regex": [
+          "share_mode\\s*=\\s*[\"']Public[\"']"
+        ],
+        "max_lines": 10
+      }
+    },
+    {
+      "id": "notebook_dataframe_followup",
+      "persona": "notebook-data-analyst",
+      "task": "analyze a dataframe and continue the same conversation",
+      "support": "current",
+      "dimensions": [
+        "dataframe",
+        "multi-turn",
+        "implicit-cursor"
+      ],
+      "prompt": "Give a concise, runnable cursor workflow (including imports and how the DataFrame is created) for a pandas DataFrame and a same-thread follow-up.",
+      "checks": {
+        "regex": [
+          "pandas|pd\\.|import pandas",
+          "DataFrame",
+          "lui\\([^\\n]*df",
+          "follow-up|lui\\("
+        ],
+        "max_lines": 14
+      }
+    },
+    {
+      "id": "notebook_history_and_new_thread",
+      "persona": "notebook-data-analyst",
+      "task": "inspect prior responses and isolate a new investigation",
+      "support": "current",
+      "dimensions": [
+        "multi-turn",
+        "implicit-cursor",
+        "backward-compatibility"
+      ],
+      "prompt": "How do I inspect a previous Louie cursor response and start a fresh thread without changing credentials?",
+      "checks": {
+        "regex": [
+          "lui\\[-1\\]",
+          "lui\\.new\\(",
+          "fresh|new thread"
+        ],
+        "max_lines": 8
+      }
+    },
+    {
+      "id": "developer_text_selection_semantics",
+      "persona": "application-developer",
+      "task": "select response text by the server contract, not by position",
+      "support": "current",
+      "dimensions": [
+        "implicit-cursor",
+        "reasoning-final",
+        "backward-compatibility"
+      ],
+      "prompt": "In three bullets, explain what Cursor.text, a history proxy's text, and lower-level Response.text each select.",
+      "checks": {
+        "regex": [
+          "(?:Cursor\\.text|lui\\.text)[^\\n]*final",
+          "(?:history|proxy)[^\\n]*(?:same|identical|final|last)",
+          "Response\\.text[^\\n]*first",
+          "last[^\\n]*(?:text|fallback)|fallback[^\\n]*last"
+        ],
+        "must_not_regex": [
+          "Cursor\\.text[^\\n]*first text"
+        ],
+        "max_lines": 8
+      }
+    },
+    {
+      "id": "investigator_elements_lossy_gap",
+      "persona": "security-investigator",
+      "task": "avoid treating the normalized elements view as protocol truth",
+      "support": "product-gap",
+      "dimensions": [
+        "implicit-cursor",
+        "mixed-partial-stream"
+      ],
+      "prompt": "Can I correlate lui.elements entries with the server's final-answer element ID? Name the two limitations and the fidelity alternative.",
+      "checks": {
+        "regex": [
+          "no|cannot|not",
+          "drop|without|lack|no element id",
+          "reorder|order|hoist|errors first",
+          "stream_messages|final_text"
+        ],
+        "max_lines": 8
+      }
+    },
+    {
+      "id": "investigator_reasoning_surface",
+      "persona": "security-investigator",
+      "task": "request and read reasoning without exposing it by default",
+      "support": "current",
+      "dimensions": [
+        "reasoning-final",
+        "implicit-cursor",
+        "privacy-org"
+      ],
+      "prompt": "How does a notebook user request Louie reasoning, read it back, and keep it off by default?",
+      "checks": {
+        "regex": [
+          "include_reasoning\\s*=\\s*True",
+          "lui\\.reasoning_text|reasoning_texts",
+          "default|off by default",
+          "per[- ]call|per query|override|constructor"
+        ],
+        "max_lines": 9
+      }
+    },
+    {
+      "id": "investigator_final_answer_selection",
+      "persona": "security-investigator",
+      "task": "resolve the server-declared final answer",
+      "support": "current",
+      "dimensions": [
+        "reasoning-final",
+        "backward-compatibility"
+      ],
+      "prompt": "How does louie-py decide which text is the final answer, and what happens when the server does not declare one?",
+      "checks": {
+        "regex": [
+          "final_answer|final-answer|final answer",
+          "lui\\.final_text|lui\\.text",
+          "server",
+          "fall[s]? back|fallback|otherwise|without|declares none",
+          "last"
+        ],
+        "max_lines": 8
+      }
+    },
+    {
+      "id": "operator_phases_progress",
+      "persona": "platform-operator",
+      "task": "build a progress view from run updates",
+      "support": "current",
+      "dimensions": [
+        "phases-progress",
+        "mixed-partial-stream"
+      ],
+      "prompt": "How do I render Louie run progress from the SDK? Name the accessors, the run-node hierarchy fields, and the de-duplication rule.",
+      "checks": {
+        "regex": [
+          "lui\\.phases|lui\\.run_updates",
+          "run_node",
+          "parent_id",
+          "children",
+          "upsert|dedup|latest|repeat"
+        ],
+        "must_not_regex": [
+          "run_node[^\\n]*\\bparent\\b\\s*(?:field|key)"
+        ],
+        "max_lines": 9
+      }
+    },
+    {
+      "id": "operator_partial_terminal",
+      "persona": "platform-operator",
+      "task": "distinguish partial timeout output from confirmed success",
+      "support": "current",
+      "dimensions": [
+        "mixed-partial-stream",
+        "error-recovery",
+        "phases-progress"
+      ],
+      "prompt": "A Louie SDK stream times out after some output. How does the caller tell partial output from confirmed success?",
+      "checks": {
+        "regex": [
+          "lui\\.succeeded",
+          "None",
+          "lui\\.status|terminal",
+          "partial|not proof|unknown"
+        ],
+        "max_lines": 8
+      }
+    },
+    {
+      "id": "operator_child_state_not_failure",
+      "persona": "platform-operator",
+      "task": "avoid misreading a cancelled child phase as overall failure",
+      "support": "current",
+      "dimensions": [
+        "phases-progress",
+        "error-recovery"
+      ],
+      "prompt": "A Louie MethodRun phase ends Cancelled while the run completes. Did the request fail, and what should I check instead?",
+      "checks": {
+        "regex": [
+          "no|not[^\\n]*fail",
+          "child|MethodRun|phase",
+          "root",
+          "lui\\.status|lui\\.succeeded|terminal"
+        ],
+        "max_lines": 7
+      }
+    },
+    {
+      "id": "developer_stream_merge",
+      "persona": "application-developer",
+      "task": "merge repeated streaming output updates correctly",
+      "support": "current",
+      "dimensions": [
+        "mixed-partial-stream",
+        "backward-compatibility"
+      ],
+      "prompt": "How should a REST client handle repeated Louie output-update records for the same element?",
+      "checks": {
+        "regex": [
+          "payload",
+          "id",
+          "upsert|merge|update",
+          "position|order"
+        ],
+        "max_lines": 8
+      }
+    },
+    {
+      "id": "developer_error_alias_gap",
+      "persona": "application-developer",
+      "task": "read error text despite the normalized view's alias mismatch",
+      "support": "product-gap",
+      "dimensions": [
+        "error-recovery",
+        "backward-compatibility"
+      ],
+      "prompt": "Why can a real Louie error show up as \"Unknown error\" in lui.elements, and how should I read errors instead?",
+      "checks": {
+        "regex": [
+          "message",
+          "text",
+          "ExceptionElement",
+          "lui\\.errors",
+          "lui\\.has_errors|raw dict"
+        ],
+        "max_lines": 8
+      }
+    },
+    {
+      "id": "developer_sdk_rest_handoff",
+      "persona": "application-developer",
+      "task": "choose the correct integration layer",
+      "support": "current",
+      "dimensions": [
+        "sdk-rest-handoff",
+        "dataframe",
+        "contract-discovery"
+      ],
+      "prompt": "When should an application use louie-py versus direct Louie REST for a DataFrame investigation?",
+      "checks": {
+        "regex": [
+          "louie-py|SDK",
+          "Python|notebook",
+          "REST",
+          "OpenAPI|/api/openapi\\.json"
+        ],
+        "max_lines": 7
+      }
+    },
+    {
+      "id": "operator_openapi_discovery",
+      "persona": "platform-operator",
+      "task": "discover an unfamiliar deployed REST contract",
+      "support": "current",
+      "dimensions": [
+        "contract-discovery",
+        "discovery"
+      ],
+      "prompt": "Before calling an unfamiliar Louie endpoint, what should I inspect?",
+      "checks": {
+        "regex": [
+          "/api/openapi\\.json",
+          "/api/docs",
+          "deployed|target",
+          "verify|authoritative|do not guess"
+        ],
+        "max_lines": 6
+      }
+    },
+    {
+      "id": "operator_openapi_limits",
+      "persona": "platform-operator",
+      "task": "know what the published OpenAPI does not cover",
+      "support": "current",
+      "dimensions": [
+        "contract-discovery",
+        "mixed-partial-stream"
+      ],
+      "prompt": "Will the deployed Louie OpenAPI tell me the chat request fields and the streaming record shapes?",
+      "checks": {
+        "regex": [
+          "no|not",
+          "free[- ]form|untyped|arbitrary object|not published|not declared",
+          "StreamingApiMessage",
+          "route|path|multipart|upload"
+        ],
+        "max_lines": 8
+      }
+    },
+    {
+      "id": "operator_stream_protocol",
+      "persona": "platform-operator",
+      "task": "consume a direct REST stream without confusing metadata with elements",
+      "support": "current",
+      "dimensions": [
+        "mixed-partial-stream",
+        "phases-progress",
+        "reasoning-final"
+      ],
+      "prompt": "List the five Louie streaming REST record types and how final-answer selection works.",
+      "checks": {
+        "regex": [
+          "StreamingApiMessageStart",
+          "StreamingApiMessageOutputUpdate",
+          "StreamingApiMessageTrace",
+          "StreamingApiMessageRunUpdate",
+          "StreamingApiMessageTerminal",
+          "final_answer"
+        ],
+        "max_lines": 10
+      }
+    },
+    {
+      "id": "operator_singleshot_upload_contract",
+      "persona": "platform-operator",
+      "task": "choose non-streaming versus multipart upload contracts",
+      "support": "current",
+      "dimensions": [
+        "contract-discovery",
+        "mixed-partial-stream"
+      ],
+      "prompt": "Contrast Louie's singleshot and upload REST requests in three bullets.",
+      "checks": {
+        "regex": [
+          "/api/chat_singleshot/",
+          "JSON array|message sequence",
+          "/api/chat_upload/",
+          "multipart|form"
+        ],
+        "max_lines": 7
+      }
+    },
+    {
+      "id": "developer_auth_configuration",
+      "persona": "application-developer",
+      "task": "configure service authentication without deprecated or hardcoded secrets",
+      "support": "current",
+      "dimensions": [
+        "authentication",
+        "privacy-org",
+        "backward-compatibility"
+      ],
+      "prompt": "Give safe current Louie client configuration for an enterprise service account and name the deprecated parameter.",
+      "checks": {
+        "regex": [
+          "GRAPHISTRY_PERSONAL_KEY_ID",
+          "GRAPHISTRY_PERSONAL_KEY_SECRET",
+          "graphistry_server",
+          "server_url",
+          "legacy|deprecated|rejected",
+          "(?:^|[^_])server="
+        ],
+        "must_not_regex": [
+          "(?:password|secret|personal_key_secret)\\s*=\\s*[\"'][A-Za-z0-9]{6,}[\"']"
+        ],
+        "max_lines": 10
+      }
+    },
+    {
+      "id": "operator_basic_auth_query_param",
+      "persona": "platform-operator",
+      "task": "recognize the credential-exposure risk in basic auth",
+      "support": "current",
+      "dimensions": [
+        "authentication",
+        "privacy-org"
+      ],
+      "prompt": "What is the credential-handling risk of Louie's /api/auth/basic endpoint, and what should non-interactive callers prefer?",
+      "checks": {
+        "regex": [
+          "query (?:param|string)",
+          "log|history",
+          "keypair|personal[- ]key",
+          "/api/auth/basic"
+        ],
+        "max_lines": 7
+      }
+    },
+    {
+      "id": "investigator_privacy_org",
+      "persona": "security-investigator",
+      "task": "choose investigation visibility deliberately",
+      "support": "current",
+      "dimensions": [
+        "privacy-org",
+        "authentication"
+      ],
+      "prompt": "Give safe visibility guidance for a sensitive Louie investigation that may later be shared with an organization, including one credential-handling rule.",
+      "checks": {
+        "regex": [
+          "Private",
+          "Organization",
+          "active org|intended",
+          "token|credential|secret"
+        ],
+        "must_not_regex": [
+          "default to Public|share_mode\\s*=\\s*[\"']Public"
+        ],
+        "max_lines": 7
+      }
+    },
+    {
+      "id": "operator_dthread_routes",
+      "persona": "platform-operator",
+      "task": "use the real plural-list and singular-lookup routes",
+      "support": "current",
+      "dimensions": [
+        "contract-discovery",
+        "backward-compatibility"
+      ],
+      "prompt": "Give the exact Louie REST paths for listing DataThreads and looking one up by ID or name.",
+      "checks": {
+        "regex": [
+          "GET /api/dthreads",
+          "GET /api/dthread/\\{identifier\\}"
+        ],
+        "must_not_regex": [
+          "/api/dthreads/\\{identifier\\}"
+        ],
+        "max_lines": 5
+      }
+    },
+    {
+      "id": "developer_dataframe_download",
+      "persona": "application-developer",
+      "task": "fetch a returned dataframe over the real wire contract",
+      "support": "current",
+      "dimensions": [
+        "dataframe",
+        "contract-discovery"
+      ],
+      "prompt": "Give the documented Louie REST path for a dataframe result and its primary wire format.",
+      "checks": {
+        "regex": [
+          "/api/dthread/\\{dthread_id\\}/df/block/\\{block_id\\}/arrow",
+          "Arrow IPC"
+        ],
+        "max_lines": 5
+      }
+    },
+    {
+      "id": "operator_live_test_boundary",
+      "persona": "platform-operator",
+      "task": "prepare an authorized dev test without exposing credentials or hardcoding hosts",
+      "support": "current",
+      "dimensions": [
+        "live-test-safety",
+        "authentication",
+        "privacy-org"
+      ],
+      "prompt": "How do I safely prepare a local Louie test against a non-production deployment?",
+      "checks": {
+        "regex": [
+          "authoriz",
+          "LOUIE_URL|environment|untracked",
+          "announce|side effect",
+          "Private|private",
+          "non-sensitive|small"
+        ],
+        "must_not_regex": [
+          "\\.k8s\\.[a-z0-9-]+\\.internal",
+          "(?:password|secret)\\s*=\\s*[\"'][A-Za-z0-9]{6,}[\"']"
+        ],
+        "max_lines": 10
+      }
+    }
+  ]
+}

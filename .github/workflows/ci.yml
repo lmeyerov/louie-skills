@@ -21,6 +21,17 @@ jobs:
           node-version: "22"
       - name: Validate skill manifests
         run: python3 scripts/ci/validate_skills.py
+      - name: Validate journey schema and evaluator
+        run: |
+          python3 -m json.tool evals/journeys/louie_api_v1.json >/dev/null
+          python3 -m json.tool evals/fixtures/louie_api_v1_golden.json >/dev/null
+          python3 -m unittest discover -s tests -v
+          python3 scripts/run_journey_evals.py \
+            evals/journeys/louie_api_v1.json \
+            --validate-only
+          python3 scripts/run_journey_evals.py \
+            evals/journeys/louie_api_v1.json \
+            evals/fixtures/louie_api_v1_golden.json
       - name: Validate secret baseline
         run: |
           python3 -m pip install --disable-pip-version-check --no-cache-dir detect-secrets
@@ -28,11 +39,17 @@ jobs:
           detect-secrets scan --baseline .secrets.baseline --only-verified
       - name: List skills with npx
         run: npx -y skills add . --list --agent codex --agent claude-code
-      - name: Install starter skill into a temporary project
+      - name: Install Louie skills into a temporary project
         run: |
           set -euo pipefail
           tmp_dir="$(mktemp -d)"
           cd "$tmp_dir"
-          npx -y skills add "$GITHUB_WORKSPACE" --agent codex --agent claude-code --skill louie --yes
+          npx -y skills add "$GITHUB_WORKSPACE" \
+            --agent codex --agent claude-code \
+            --skill louie --skill louie-py --skill louie-rest-api --yes
           test -f .agents/skills/louie/SKILL.md
+          test -f .agents/skills/louie-py/SKILL.md
+          test -f .agents/skills/louie-rest-api/SKILL.md
           test -L .claude/skills/louie
+          test -L .claude/skills/louie-py
+          test -L .claude/skills/louie-rest-api
