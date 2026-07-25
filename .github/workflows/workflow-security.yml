@@ -1,0 +1,41 @@
+name: Workflow Security
+
+on:
+  pull_request:
+    paths: [".github/workflows/**", ".github/actionlint.yaml", ".github/zizmor.yml"]
+  push:
+    branches: [main]
+    paths: [".github/workflows/**", ".github/actionlint.yaml", ".github/zizmor.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install actionlint
+        run: |
+          set -euo pipefail
+          version="1.7.7"
+          curl --fail --location --retry 3 --proto '=https' --tlsv1.2 \
+            -o actionlint.tar.gz "https://github.com/rhysd/actionlint/releases/download/v${version}/actionlint_${version}_linux_amd64.tar.gz"
+          tar -xzf actionlint.tar.gz actionlint
+      - name: Run actionlint
+        run: ./actionlint -shellcheck=
+  zizmor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install and run zizmor
+        run: |
+          python3 -m pip install --disable-pip-version-check --no-cache-dir zizmor
+          zizmor --format=github --no-progress --config .github/zizmor.yml --min-severity medium .github/workflows/*.yml

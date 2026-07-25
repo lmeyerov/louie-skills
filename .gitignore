@@ -1,0 +1,26 @@
+# Local planning and agent state
+plans/
+AI_PROGRESS/
+.agents/local/
+.claude/
+.codex/
+
+# Secrets and environment files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Tool and runtime output
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tmp/
+tmp/
+runs/
+*.log

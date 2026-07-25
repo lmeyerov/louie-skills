@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - name: Validate skill manifests
+        run: python3 scripts/ci/validate_skills.py
+      - name: Validate secret baseline
+        run: |
+          python3 -m pip install --disable-pip-version-check --no-cache-dir detect-secrets
+          detect-secrets scan --baseline .secrets.baseline
+          detect-secrets scan --baseline .secrets.baseline --only-verified
+      - name: List skills with npx
+        run: npx -y skills add . --list --agent codex --agent claude-code
+      - name: Install starter skill into a temporary project
+        run: |
+          set -euo pipefail
+          tmp_dir="$(mktemp -d)"
+          cd "$tmp_dir"
+          npx -y skills add "$GITHUB_WORKSPACE" --agent codex --agent claude-code --skill louie --yes
+          test -f .agents/skills/louie/SKILL.md
+          test -L .claude/skills/louie
