@@ -19,7 +19,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "npm"
       - name: Validate skill manifests
         run: python3 scripts/ci/validate_skills.py
       - name: Validate secret baseline
