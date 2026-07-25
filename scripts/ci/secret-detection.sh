@@ -28,6 +28,10 @@ if [[ ! -f .secrets.baseline ]]; then
   exit 1
 fi
 
+baseline_copy="$(mktemp)"
+trap "rm -f \"$baseline_copy\"" EXIT
+cp .secrets.baseline "$baseline_copy"
+
 if [[ "$check_only" == true ]]; then
   mapfile -d '' staged < <(git diff --cached --name-only -z --diff-filter=ACM)
   files=()
@@ -40,13 +44,13 @@ if [[ "$check_only" == true ]]; then
     exit 0
   fi
   scan="$(mktemp)"
-  trap 'rm -f "$scan"' EXIT
-  "${detector[@]}" scan --baseline .secrets.baseline "${files[@]}" >"$scan" 2>/dev/null || true
-  if [[ ! -s "" ]]; then
+  trap 'rm -f "$scan" "$baseline_copy"' EXIT
+  "${detector[@]}" scan --baseline "$baseline_copy" "${files[@]}" >"$scan" 2>/dev/null || true
+  if [[ ! -s "$scan" ]]; then
     echo "secret check: passed"
     exit 0
   fi
-  if python3 - "" <<'PY'
+  if python3 - "$scan" <<'PY'
 import json
 import sys
 with open(sys.argv[1]) as f:
@@ -61,6 +65,6 @@ PY
   exit 1
 fi
 
-"${detector[@]}" scan --baseline .secrets.baseline
-"${detector[@]}" scan --baseline .secrets.baseline --only-verified
+"${detector[@]}" scan --baseline "$baseline_copy"
+"${detector[@]}" scan --baseline "$baseline_copy" --only-verified
 echo "secret check: passed"
