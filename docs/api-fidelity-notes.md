@@ -63,8 +63,19 @@ and friends) are present on both the cursor and its history proxies.
 | `succeeded` is `None` when no terminal record arrived | source | This is how callers detect a truncated stream |
 | History proxies retain run metadata | live | `lui[-2].run_updates` is populated |
 
-**Version sensitivity.** These accessors require a recent `louieai`. Confirm the
-installed version exposes a property before relying on it.
+**Basis.** The SDK behavior above was verified against `louie-py` commit
+`88181e4`. That work merged to `main` as `d0eedbd` ("feat: reasoning-aware
+response API", PR #44); the only source difference between the two is a
+docstring that replaced example credentials with placeholders, so these notes
+describe what actually landed.
+
+**Version sensitivity.** As of that merge the accessors sit under `[Unreleased]`
+in the changelog — the newest tag is `v0.8.1`, which predates them. Anyone
+installing a published `louieai` will not have them. Guard with `hasattr` or a
+version check; `text`, `errors`, and `has_errors` exist in both generations.
+
+Re-verify this table when the next release tags, and re-run the journey suite
+after any change touching streaming, elements, or auth.
 
 ## Open product gaps
 

@@ -5,7 +5,9 @@ description: "Build, debug, or explain Python and notebook workflows using the l
 
 # Louie Python SDK
 
-Use this for Python/notebook integrations; use `louie-rest-api` for direct HTTP or FastAPI work. The reasoning-aware accessors below require a recent `louieai`. When a local `louie-py` checkout is available, inspect its `src/louieai/` and `docs/`; otherwise confirm the installed version exposes a property before relying on it. Never recommend private attributes.
+Use this for Python/notebook integrations; use `louie-rest-api` for direct HTTP or FastAPI work.
+
+**Version note.** The reasoning-aware accessors below (`final_text`, `reasoning_text`, `phases`, `run_updates`, `status`, `terminal`, `succeeded`, `stream_messages`) landed on `louie-py` `main` after `v0.8.1` and are not in a tagged release yet. Callers pinned to a published version will not have them. Check `hasattr(lui, "final_text")` or the installed version before relying on any of them, and fall back to `lui.text` / `lui.errors`, which exist in both. When a local `louie-py` checkout is available, inspect its `src/louieai/` and `docs/`. Never recommend private attributes.
 
 ## Cursor basics
 
