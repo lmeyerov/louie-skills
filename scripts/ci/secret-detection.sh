@@ -29,7 +29,7 @@ if [[ ! -f .secrets.baseline ]]; then
 fi
 
 baseline_copy="$(mktemp)"
-trap "rm -f \"$baseline_copy\"" EXIT
+trap 'rm -f "$baseline_copy"' EXIT
 cp .secrets.baseline "$baseline_copy"
 
 if [[ "$check_only" == true ]]; then
