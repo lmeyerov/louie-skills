@@ -49,6 +49,8 @@ Reasoning is off by default; keep it off unless the user wants draft output. Wit
 
 ## Run-tree shape
 
+Output elements arrive as `StreamingApiMessageOutputUpdate` records carrying the element in `payload` at a `position`. A `payload.id` repeats as the element grows, so a client reading the stream directly must upsert by `payload.id` rather than append; the SDK already does this before exposing `lui.final_text`.
+
 Each `StreamingApiMessageRunUpdate` carries a `run_node` with `id`, `parent_id`, `children`, `state`, `node_type` (`Run` for the root, `MethodRun` for phases), `run_type`, `results`, `token_flow`, and `final_answer`. Note:
 
 - The hierarchy fields are `parent_id` and `children`, nested under `run_node`.
